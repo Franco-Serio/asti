@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTI em Ação: Portfólio Interativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a tab-based navigation to switch between the two 'Turmas' (classes). This prevents a long scroll and logically segments the content. Each turma's section displays an introductory text, a summary chart, and a grid of project cards. Clicking a project card opens a modal window with its specific deliverables (links), keeping the user in context. This structure was chosen for its clarity, interactivity, and ability to present hierarchical information (Turma -> Projeto -> Produções) in an intuitive, non-linear way, enhancing user exploration and engagement compared to a simple list. -->
+    <!-- Visualization & Content Choices: Report Info: Project lists for two classes. -> Goal: Organize, Inform, Compare. -> Viz/Presentation Method: Interactive cards for projects, stat counters, and a donut chart (Chart.js/Canvas) per class to show the breakdown of production types (e.g., Sites, Games, AI Tools). -> Interaction: Users click tabs to switch class views. Users click project cards to open a modal with details. Chart tooltips provide specific counts on hover. -> Justification: This transforms a static list into an exploratory dashboard. The cards provide a clean overview, the modal allows for a drill-down without losing context, and the charts add a valuable analytical layer, summarizing the nature of each class's work visually. -> Library/Method: Chart.js for canvas-based charts. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #4A4A4A;
+        }
+        .tab-active {
+            background-color: #81B29A;
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            background-color: #E0E0E0;
+            color: #6B7280;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="container mx-auto p-4 sm:p-6 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#3D405B]">Assistente de TI em Ação</h1>
+            <p class="text-lg md:text-xl text-gray-600 mt-2">Consultoria, suporte em TI e Desenvolvimento de Soluções Digitais Inovadoras para Empreendedores Locais. </p>
+            <p class="text-base md:text-lg max-w-3xl mx-auto text-gray-700 mt-4">Os alunos de ASTI atuaram em consultoria, suporte de hardware e redes, e desenvolvimento de soluções digitais inovadoras para empreendedores locais. Os projetos incluíram propostas de atualização, orçamentos, criação de redes no Packet Tracer e desenvolvimento de soluções digitais (sites, informativos, jogos) usando o Canva, Office 365, Copilot e outras ferramentas de IA.</p>
+        </header>
+
+        <nav class="flex justify-center mb-8 md:mb-10">
+            <div class="flex space-x-2 sm:space-x-4 bg-gray-200 p-1.5 rounded-full">
+                <button id="tab-2025" class="tab-button px-4 sm:px-6 py-2.5 text-sm sm:text-base rounded-full transition-colors duration-300">Turma 2025.28.14</button>
+                <button id="tab-2024" class="tab-button px-4 sm:px-6 py-2.5 text-sm sm:text-base rounded-full transition-colors duration-300">Turma 2024.28.182</button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="content-2025" class="content-section">
+                <section class="text-center mb-10 p-6 bg-white/70 rounded-2xl shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#E07A5F] mb-2">ASTI - Criando Soluções Digitais Inovadoras</h2>
+                    <p class="text-base md:text-lg max-w-3xl mx-auto text-gray-700">Explorando o tema "Atuação do profissional de ASTI na consultoria, suporte em TI e Desenvolvimento de Soluções Digitais Inovadoras para Empreendedores Locais.", esta turma desenvolveu projetos criativos focados em sustentabilidade, educação e turismo, utilizando a tecnologia como ferramenta principal para gerar impacto positivo e conscientização ambiental.</p>
+                </section>
+                <section class="grid md:grid-cols-3 gap-8 items-center mb-12">
+                    <div class="md:col-span-1 flex flex-col items-center text-center">
+                         <h3 class="text-xl font-semibold text-gray-800 mb-4">Produções por Categoria</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-2025"></canvas>
+                        </div>
+                    </div>
+                    <div id="stats-2025" class="md:col-span-2 grid grid-cols-2 gap-4 sm:gap-6 text-center">
+                    </div>
+                </section>
+                <div id="projects-grid-2025" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                </div>
+            </div>
+
+            <div id="content-2024" class="content-section hidden">
+                 <section class="text-center mb-10 p-6 bg-white/70 rounded-2xl shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#E07A5F] mb-2">ASTI - Criando Soluções para Empreendedores</h2>
+                    <p class="text-base md:text-lg max-w-3xl mx-auto text-gray-700">Com o foco em "Construindo Soluções Digitais para Empreendedores Locais", esta turma aplicou seus conhecimentos para criar ferramentas práticas, como sites e assistentes virtuais, impulsionando negócios locais de diversos setores e explorando o potencial das ferramentas de IA.</p>
+                </section>
+                 <section class="grid md:grid-cols-3 gap-8 items-center mb-12">
+                    <div class="md:col-span-1 flex flex-col items-center text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Produções por Categoria</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-2024"></canvas>
+                        </div>
+                    </div>
+                    <div id="stats-2024" class="md:col-span-2 grid grid-cols-2 gap-4 sm:gap-6 text-center">
+                    </div>
+                </section>
+                <div id="projects-grid-2024" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div id="modal-backdrop" class="modal-backdrop fixed inset-0"></div>
+        <div id="modal-content" class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto z-10 transform scale-95">
+            <div class="p-6 sm:p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 id="modal-title" class="text-2xl font-bold text-[#3D405B]"></h3>
+                        <p id="modal-subtitle" class="text-gray-500"></p>
+                    </div>
+                    <button id="modal-close" class="text-gray-400 hover:text-gray-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="modal-body" class="space-y-3">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const appData = {
+            '2025': {
+                theme: 'ASTI Inovador: Transformando Ideias em Negócios Sustentáveis com Tecnologia',
+                projects: [
+                    {
+                        name: 'Aruana Digital',
+                        subtitle: 'Soluções de TI e Marketing Digital',
+                        productions: [
+                            { name: 'Apresentação', url: 'https://www.canva.com/design/DAGwm0XewI0/TvRVQvsvpkJwPcZbBekD1w/view?utm_content=DAGwm0XewI0&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hafca4fbd26', type: 'Documento' },
+                            { name: 'Site Institucional', url: 'https://eclectic-sundae-6b4b4c.netlify.app/', type: 'Site' },
+                            { name: 'Jogo Conscientização digital', url: 'https://aruanagame01.my.canva.site/', type: 'Jogo/Quiz' },
+                            { name: 'Quiz reciclagem e meio ambiente', url: 'https://aruanagame2.my.canva.site/', type: 'Jogo/Quiz' },
+                            { name: 'Jogo A aventura da reciclagem', url: 'https://aruanagame3.my.canva.site/', type: 'Jogo/Quiz' },
+                        ]
+                    },
+                    {
+                        name: 'WMCEA',
+                        subtitle: 'Experiências Educacionais',
+                        productions: [
+                            { name: 'Apresentação', url: 'https://www.canva.com/design/DAGrSNtJaog/Ck3tx1tUaiXEjzVFVulklQ/edit?utm_content=DAGrSNtJaog&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Site Institucional', url: 'https://suarenda-emsuacasa.my.canva.site/wmcea-transformando-espa-os-em-experi-ncias', type: 'Site' },
+                            { name: 'Jogo Educativo: games desenvolvido com o uso do chatGPT e do Canva IA', url: 'https://www.canva.com/design/DAGrfAF3-VA/aQWgG_NmM_NzmMljieZuKw/edit', type: 'Jogo/Quiz' },
+                        ]
+                    },
+                    {
+                        name: 'Nature Park',
+                        subtitle: 'Parque Educativo de Sustentabilidade',
+                        productions: [
+                            { name: 'Apresentação', url: 'https://www.canva.com/design/DAGpUtC4duo/8_m1Z8W1JZtlhReXDpQRMw/edit?utm_content=DAGpUtC4duo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Jogo Salto Ecológico', url: 'https://natureparkgames.my.canva.site', type: 'Jogo/Quiz' },
+                            { name: 'Jogo Coleta Verde', url: 'https://natureparkgames.my.canva.site/coleta-verde', type: 'Jogo/Quiz' },
+                            { name: 'Jogo Energia Limpa', url: 'https://natureparkgames.my.canva.site/energia-limpa', type: 'Jogo/Quiz' },
+                            { name: 'Jogo Missão Polinizadora', url: 'https://natureparkgames.my.canva.site/missao-polinizadora', type: 'Jogo/Quiz' },
+                            { name: 'Jogo Missão Reflorestamento', url: 'https://natureparkgames.my.canva.site/reflorestamento', type: 'Jogo/Quiz' },
+                        ]
+                    },
+                    {
+                        name: 'Belém Experience',
+                        subtitle: 'Turismo Sustentável',
+                        productions: [
+                            { name: 'Apresentação', url: 'https://www.canva.com/design/DAGqolog-AM/wekdBqMoRgEjNfQhQp1LuA/edit?utm_content=DAGqolog-AM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Site Institucional: Produzido com Wix IA', url: 'https://belemexp.wixsite.com/m-experience', type: 'Site' },
+                            { name: 'EcoHerói: Aventura Ambiental', url: 'https://belexpgame1.my.canva.site/', type: 'Jogo/Quiz' },
+                            { name: 'EcoRecicla', url: 'https://belexpgame3.my.canva.site/jogo-educativo-reciclagem-e-preserva-o-do-meio-ambiente', type: 'Jogo/Quiz' },
+                            { name: 'A Jornada da Essência Anti-Poluição', url: 'https://belexpgame2.my.canva.site/', type: 'Jogo/Quiz' },
+                            { name: 'Eco Doom', url: 'https://belexpgame4.my.canva.site/', type: 'Jogo/Quiz' },
+                        ]
+                    }
+                ]
+            },
+            '2024': {
+                theme: 'ASTI em Ação: Construindo Soluções Digitais para Empreendedores Locais',
+                projects: [
+                    {
+                        name: 'GreenLux',
+                        subtitle: 'Locadora de Carros Elétricos',
+                        productions: [
+                            { name: 'Apresentação dos Resultados', url: 'https://www.canva.com/design/DAGc2jGzYQ0/u_SxD2qUZXCteoqN9IvctA/edit', type: 'Documento' },
+                            { name: 'Site', url: 'https://www.canva.com/design/DAGdyTS5QgQ/B5XShmZYIImL6oG3KtebeQ/edit?utm_content=DAGdyTS5QgQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Site' },
+                            { name: 'Assistente de atendimento virtual', url: 'https://antoninoreiis.wixsite.com/greenlux-car', type: 'Assistente Virtual' },
+                        ]
+                    },
+                    {
+                        name: 'PetCare Plus',
+                        subtitle: 'Pet Shop',
+                        productions: [
+                            { name: 'Apresentação dos Resultados', url: 'https://www.canva.com/design/DAGcSsX6Mwo/AN2uOWXYa-uIloErIBJBFQ/edit', type: 'Documento' },
+                            { name: 'Site', url: 'https://www.canva.com/design/DAGeEaTiO9o/VuV3kZwEk8gAx-ykONczOw/edit?utm_content=DAGeEaTiO9o&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Site' },
+                            { name: 'Assistente de atendimento virtual', url: 'https://hugoaragaoazevedo.wixsite.com/petcare-plus', type: 'Assistente Virtual' },
+                        ]
+                    },
+                    {
+                        name: 'Moda Belém',
+                        subtitle: 'Comércio de Roupas',
+                        productions: [
+                            { name: 'Site', url: 'https://www.canva.com/design/DAGdyUCbLVY/C23vCrM2UEKqsYd6lNsZBA/edit?utm_content=DAGdyUCbLVY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Site' },
+                            { name: 'Assistente de atendimento virtual', url: 'https://renatopmelo.wixsite.com/moda-bel', type: 'Assistente Virtual' },
+                        ]
+                    },
+                    {
+                        name: 'TechMaster',
+                        subtitle: 'Escola de Informática',
+                        productions: [
+                            { name: 'Apresentação dos Resultados', url: 'https://www.canva.com/design/DAGc2fmYWcs/SMgJq-lIjq0KiMeMEwwxTA/edit?utm_content=DAGc2fmYWcs&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Site', url: 'https://www.canva.com/design/DAGdyXBznT4/JHZ4fh3nqAQjI1Hczhc1wg/edit', type: 'Site' },
+                            { name: 'Assistente de atendimento virtual', url: 'https://priscilaportilho01.wixsite.com/techmaster', type: 'Assistente Virtual' },
+                        ]
+                    },
+                     {
+                        name: 'Sabor da Terra',
+                        subtitle: 'Restaurante',
+                        productions: [
+                            { name: 'Apresentação dos Resultados', url: 'https://www.canva.com/design/DAGcNMeFDcA/uanLvZpLaS_Ocoe5zQXyKw/edit', type: 'Documento' },
+                            { name: 'Site', url: 'https://www.canva.com/design/DAGdySHNERM/h66wMlWjd0OWQ5wUUD0Bwg/edit?utm_content=DAGdySHNERM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Site' },
+                            { name: 'Assistente de atendimento virtual', url: 'https://milionascimento.wixsite.com/sabor-da-terra', type: 'Assistente Virtual' },
+                        ]
+                    },
+                    {
+                        name: 'Informativos Digitais',
+                        subtitle: 'Ferramentas de IA',
+                        productions: [
+                            { name: 'Informativo digital 1', url: 'https://www.canva.com/design/DAGwivWk6O0/7mHF9D7PP6yE3kgXESK90w/edit?utm_content=DAGwivWk6O0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Informativo digital 2', url: 'https://www.canva.com/design/DAGhE0rDB-Q/Qr5PdaV1hyWpNz-QRD2o_A/edit?utm_content=DAGhE0rDB-Q&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Informativo digital 3', url: 'https://www.canva.com/design/DAGganLylII/bU8dcimRgIjlqph_JI12Bg/edit?utm_content=DAGganLylII&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Informativo digital 4', url: 'https://www.canva.com/design/DAGgagu0_q0/jopgGIkHWr6o9QQM_UZ5Ig/edit?utm_content=DAGgagu0_q0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                            { name: 'Informativo digital 5', url: 'https://www.canva.com/design/DAGgU6Yi5Z4/LLWcPn5LE9zyW1OtpilB8g/edit?utm_content=DAGgU6Yi5Z4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton', type: 'Documento' },
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let activeTab = '2025';
+        let charts = {};
+
+        const tabButtons = {
+            '2025': document.getElementById('tab-2025'),
+            '2024': document.getElementById('tab-2024')
+        };
+
+        const contentSections = {
+            '2025': document.getElementById('content-2025'),
+            '2024': document.getElementById('content-2024')
+        };
+
+        const modal = document.getElementById('modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        const modalCloseBtn = document.getElementById('modal-close');
+        
+        function getIconForType(type) {
+            switch(type) {
+                case 'Site': return '🌐';
+                case 'Jogo/Quiz': return '🎮';
+                case 'Assistente Virtual': return '🤖';
+                case 'Documento': return '📄';
+                default: return '🔗';
+            }
+        }
+
+        function renderProjects(turma) {
+            const grid = document.getElementById(`projects-grid-${turma}`);
+            grid.innerHTML = '';
+            const projects = appData[turma].projects;
+
+            projects.forEach((project, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col';
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-[#3D405B]">${project.name}</h3>
+                        <p class="text-gray-500 mb-4">${project.subtitle}</p>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-sm font-medium text-[#81B29A]">${project.productions.length} produções</span>
+                        <span class="text-gray-400 text-xs font-semibold">VER MAIS →</span>
+                    </div>
+                `;
+                card.addEventListener('click', () => openModal(turma, index));
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderStats(turma) {
+            const statsContainer = document.getElementById(`stats-${turma}`);
+            const projects = appData[turma].projects;
+            const totalProjects = projects.length;
+            const totalProductions = projects.reduce((sum, p) => sum + p.productions.length, 0);
+
+            statsContainer.innerHTML = `
+                <div class="bg-teal-50 p-4 sm:p-6 rounded-lg">
+                    <p class="text-3xl sm:text-4xl font-bold text-teal-600">${totalProjects}</p>
+                    <p class="text-sm sm:text-base text-teal-800">Projetos Desenvolvidos</p>
+                </div>
+                <div class="bg-amber-50 p-4 sm:p-6 rounded-lg">
+                    <p class="text-3xl sm:text-4xl font-bold text-amber-600">${totalProductions}</p>
+                    <p class="text-sm sm:text-base text-amber-800">Produções Entregues</p>
+                </div>
+            `;
+        }
+
+        function openModal(turma, projectIndex) {
+            const project = appData[turma].projects[projectIndex];
+            document.getElementById('modal-title').textContent = project.name;
+            document.getElementById('modal-subtitle').textContent = project.subtitle;
+            
+            const body = document.getElementById('modal-body');
+            body.innerHTML = '';
+            project.productions.forEach(prod => {
+                const linkItem = document.createElement('a');
+                linkItem.href = prod.url;
+                linkItem.target = '_blank';
+                linkItem.className = 'flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200';
+                linkItem.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xl mr-3">${getIconForType(prod.type)}</span>
+                        <div>
+                            <span class="font-semibold text-gray-800">${prod.name}</span>
+                            <span class="text-xs text-gray-500 ml-2">${prod.type}</span>
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium text-[#81B29A]">Acessar</span>
+                `;
+                body.appendChild(linkItem);
+            });
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        function switchTab(newTab) {
+            if (activeTab === newTab) return;
+
+            tabButtons[activeTab].classList.remove('tab-active');
+            tabButtons[activeTab].classList.add('tab-inactive');
+            contentSections[activeTab].classList.add('hidden');
+
+            activeTab = newTab;
+            
+            tabButtons[activeTab].classList.add('tab-active');
+            tabButtons[activeTab].classList.remove('tab-inactive');
+            contentSections[activeTab].classList.remove('hidden');
+        }
+        
+        function createChart(turma) {
+            const projects = appData[turma].projects;
+            const productionCounts = projects.flatMap(p => p.productions)
+                .reduce((acc, prod) => {
+                    acc[prod.type] = (acc[prod.type] || 0) + 1;
+                    return acc;
+                }, {});
+
+            const ctx = document.getElementById(`chart-${turma}`).getContext('2d');
+            
+            if (charts[turma]) {
+                charts[turma].destroy();
+            }
+
+            charts[turma] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(productionCounts),
+                    datasets: [{
+                        label: 'Produções',
+                        data: Object.values(productionCounts),
+                        backgroundColor: [
+                            '#81B29A',
+                            '#F2CC8F',
+                            '#E07A5F',
+                            '#3D405B',
+                            '#BDB2FF',
+                        ],
+                        borderColor: '#F8F7F4',
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    family: "'Inter', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tabButtons['2025'].addEventListener('click', () => switchTab('2025'));
+            tabButtons['2024'].addEventListener('click', () => switchTab('2024'));
+            
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalBackdrop.addEventListener('click', closeModal);
+
+            renderProjects('2025');
+            renderProjects('2024');
+            renderStats('2025');
+            renderStats('2024');
+            
+            createChart('2025');
+            createChart('2024');
+
+            switchTab('2025');
+            
+            modalBackdrop.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+        });
+    </script>
+</body>
+</html>
